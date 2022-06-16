@@ -1,0 +1,440 @@
+总样本数目：20万
+测试样本数：1万
+batchsize：256
+
+第一次
+参数配置列表
+Global:
+  use_gpu: false
+  epoch_num: 500
+  log_smooth_window: 20
+  print_batch_step: 10
+  save_model_dir: ./output/rec_chinese_common_v2.0
+  save_epoch_step: 3
+  # evaluation is run every 5000 iterations after the 4000th iteration
+  eval_batch_step: [0, 2000]
+  cal_metric_during_train: True
+  pretrained_model:
+  checkpoints:
+  save_inference_dir:
+  use_visualdl: False
+  infer_img: doc/imgs_words/ch/word_1.jpg
+  # for data or label process
+  character_dict_path: ppocr/utils/ppocr_keys_v1.txt
+  max_text_length: 25
+  infer_mode: False
+  use_space_char: True
+  save_res_path: ./output/rec/predicts_chinese_common_v2.0.txt
+
+
+Optimizer:
+  name: Adam
+  beta1: 0.9
+  beta2: 0.999
+  lr:
+    name: Cosine
+    learning_rate: 0.001
+    warmup_epoch: 5
+  regularizer:
+    name: 'L2'
+    factor: 0.00004
+
+Architecture:
+  model_type: rec
+  algorithm: CRNN
+  Transform:
+  Backbone:
+    name: ResNet
+    layers: 34
+  Neck:
+    name: SequenceEncoder
+    encoder_type: rnn
+    hidden_size: 256
+  Head:
+    name: CTCHead
+    fc_decay: 0.00004
+
+Loss:
+  name: CTCLoss
+
+PostProcess:
+  name: CTCLabelDecode
+
+Metric:
+  name: RecMetric
+  main_indicator: acc
+
+Train:
+  dataset:
+    name: SimpleDataSet
+    data_dir: /content/PaddleOCR/train_data/HW_Chinese/
+    label_file_list: ["/content/PaddleOCR/train_data/HW_Chinese/train.txt"]
+    transforms:
+      - DecodeImage: # load image
+          img_mode: BGR
+          channel_first: False
+      - RecAug: 
+      - CTCLabelEncode: # Class handling label
+      - RecResizeImg:
+          image_shape: [3, 32, 320]
+      - KeepKeys:
+          keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
+  loader:
+    shuffle: True
+    batch_size_per_card: 200
+    drop_last: True
+    num_workers: 8
+
+Eval:
+  dataset:
+    name: SimpleDataSet
+    data_dir: /content/PaddleOCR/train_data/HW_Chinese/
+    label_file_list: ["/content/PaddleOCR/train_data/HW_Chinese/test.txt"]
+    transforms:
+      - DecodeImage: # load image
+          img_mode: BGR
+          channel_first: False
+      - CTCLabelEncode: # Class handling label
+      - RecResizeImg:
+          image_shape: [3, 32, 320]
+      - KeepKeys:
+          keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
+  loader:
+    shuffle: False
+    drop_last: False
+    batch_size_per_card: 200
+    num_workers: 8
+
+运行状态：
+2022/04/13 07:47:41] root INFO: train from scratch
+[2022/04/13 07:47:41] root INFO: train dataloader has 1198 iters
+[2022/04/13 07:47:41] root INFO: valid dataloader has 87 iters
+[2022/04/13 07:47:41] root INFO: During the training process, after the 0th iteration, an evaluation is run every 2000 iterations
+[2022/04/13 07:47:41] root INFO: Initialize indexs of datasets:['/content/PaddleOCR/train_data/HW_Chinese/train.txt']
+[2022/04/13 08:18:53] root INFO: epoch: [1/500], iter: 10, lr: 0.000001, loss: 657.583496, acc: 0.000000, norm_edit_dis: 0.000630, reader_cost: 1.09651 s, batch_cost: 186.76595 s, samples: 2200, ips: 1.17794
+[2022/04/13 08:46:54] root INFO: epoch: [1/500], iter: 20, lr: 0.000002, loss: 656.125671, acc: 0.000000, norm_edit_dis: 0.000804, reader_cost: 0.00137 s, batch_cost: 167.78675 s, samples: 2000, ips: 1.19199
+[2022/04/13 09:14:31] root INFO: epoch: [1/500], iter: 30, lr: 0.000003, loss: 648.692322, acc: 0.000000, norm_edit_dis: 0.000580, reader_cost: 0.00131 s, batch_cost: 165.48506 s, samples: 2000, ips: 1.20857
+[2022/04/13 09:42:05] root INFO: epoch: [1/500], iter: 40, lr: 0.000005, loss: 636.126038, acc: 0.000000, norm_edit_dis: 0.000005, reader_cost: 0.00130 s, batch_cost: 165.08349 s, samples: 2000, ips: 1.21151
+
+第二次
+配置文件
+Global:
+  use_gpu: true
+  epoch_num: 4
+  log_smooth_window: 20
+  print_batch_step: 10
+  save_model_dir: /content/PaddleOCR/output/rec_chinese_lite_v2.0
+  save_epoch_step: 1
+  # evaluation is run every 5000 iterations after the 4000th iteration
+  eval_batch_step: [0, 2000]
+  cal_metric_during_train: True
+  pretrained_model:
+  checkpoints: 
+  save_inference_dir:
+  use_visualdl: False
+  infer_img: /content/drive/MyDrive/imgceshi/0_1.jpg
+  # for data or label process
+  character_dict_path: /content/PaddleOCR/ppocr/utils/ppocr_keys_v1.txt
+  max_text_length: 25
+  infer_mode: False
+  use_space_char: True
+  save_res_path: /content/PaddleOCR/output/predicts_chinese_lite_v2.0.txt
+
+
+Optimizer:
+  name: Adam
+  beta1: 0.9
+  beta2: 0.999
+  lr:
+    name: Cosine
+    learning_rate: 0.001
+    warmup_epoch: 5
+  regularizer:
+    name: 'L2'
+    factor: 0.00001
+
+Architecture:
+  model_type: rec
+  algorithm: CRNN
+  Transform:
+  Backbone:
+    name: MobileNetV3
+    scale: 0.5
+    model_name: small
+    small_stride: [1, 2, 2, 2]
+  Neck:
+    name: SequenceEncoder
+    encoder_type: rnn
+    hidden_size: 48
+  Head:
+    name: CTCHead
+    fc_decay: 0.00001
+
+Loss:
+  name: CTCLoss
+
+PostProcess:
+  name: CTCLabelDecode
+
+Metric:
+  name: RecMetric
+  main_indicator: acc
+
+Train:
+  dataset:
+    name: SimpleDataSet
+    data_dir: /content/PaddleOCR/train_data/HW_Chinese/
+    label_file_list: ["/content/PaddleOCR/train_data/HW_Chinese/train.txt"]
+    transforms:
+      - DecodeImage: # load image
+          img_mode: BGR
+          channel_first: False
+      - RecAug: 
+      - CTCLabelEncode: # Class handling label
+      - RecResizeImg:
+          image_shape: [3, 32, 320]
+      - KeepKeys:
+          keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
+  loader:
+    shuffle: True
+    batch_size_per_card: 128
+    drop_last: True
+    num_workers: 8
+
+Eval:
+  dataset:
+    name: SimpleDataSet
+    data_dir: /content/PaddleOCR/train_data/HW_Chinese/
+    label_file_list: ["/content/PaddleOCR/train_data/HW_Chinese/test.txt"]
+    transforms:
+      - DecodeImage: # load image
+          img_mode: BGR
+          channel_first: False
+      - CTCLabelEncode: # Class handling label
+      - RecResizeImg:
+          image_shape: [3, 32, 320]
+      - KeepKeys:
+          keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
+  loader:
+    shuffle: False
+    drop_last: False
+    batch_size_per_card: 128
+    num_workers: 8
+
+训练评估结果
+	 result: 	nan
+
+第三次
+Global:
+  use_gpu: true
+  epoch_num: 4
+  log_smooth_window: 20
+  print_batch_step: 10
+  save_model_dir: /content/PaddleOCR/output/rec_chinese_lite_v2.0
+  save_epoch_step: 1
+  # evaluation is run every 5000 iterations after the 4000th iteration
+  eval_batch_step: [0, 1000]
+  cal_metric_during_train: True
+  pretrained_model:
+  checkpoints: 
+  save_inference_dir:
+  use_visualdl: False
+  infer_img: /content/drive/MyDrive/imgceshi/0_1.jpg
+  # for data or label process
+  character_dict_path: /content/PaddleOCR/ppocr/utils/ppocr_keys_v1.txt
+  max_text_length: 25
+  infer_mode: False
+  use_space_char: True
+  save_res_path: /content/PaddleOCR/output/predicts_chinese_lite_v2.0.txt
+
+
+Optimizer:
+  name: Adam
+  beta1: 0.9
+  beta2: 0.999
+  lr:
+    name: Cosine
+    learning_rate: 0.001
+    warmup_epoch: 5
+  regularizer:
+    name: 'L2'
+    factor: 0.00001
+
+Architecture:
+  model_type: rec
+  algorithm: CRNN
+  Transform:
+  Backbone:
+    name: MobileNetV3
+    scale: 0.5
+    model_name: small
+    small_stride: [1, 2, 2, 2]
+  Neck:
+    name: SequenceEncoder
+    encoder_type: rnn
+    hidden_size: 48
+  Head:
+    name: CTCHead
+    fc_decay: 0.00001
+
+Loss:
+  name: CTCLoss
+
+PostProcess:
+  name: CTCLabelDecode
+
+Metric:
+  name: RecMetric
+  main_indicator: acc
+
+Train:
+  dataset:
+    name: SimpleDataSet
+    data_dir: /content/PaddleOCR/train_data/HW_Chinese/
+    label_file_list: ["/content/PaddleOCR/train_data/HW_Chinese/train.txt"]
+    transforms:
+      - DecodeImage: # load image
+          img_mode: BGR
+          channel_first: False
+      - RecAug: 
+      - CTCLabelEncode: # Class handling label
+      - RecResizeImg:
+          image_shape: [3, 32, 320]
+      - KeepKeys:
+          keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
+  loader:
+    shuffle: True
+    batch_size_per_card: 256
+    drop_last: True
+    num_workers: 8
+
+Eval:
+  dataset:
+    name: SimpleDataSet
+    data_dir: /content/PaddleOCR/train_data/HW_Chinese/
+    label_file_list: ["/content/PaddleOCR/train_data/HW_Chinese/test.txt"]
+    transforms:
+      - DecodeImage: # load image
+          img_mode: BGR
+          channel_first: False
+      - CTCLabelEncode: # Class handling label
+      - RecResizeImg:
+          image_shape: [3, 32, 320]
+      - KeepKeys:
+          keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
+  loader:
+    shuffle: False
+    drop_last: False
+    batch_size_per_card: 256
+    num_workers: 8
+
+结果：
+	 result: 。	0.758446
+
+第四次
+Global:
+  use_gpu: true
+  epoch_num: 500
+  log_smooth_window: 20
+  print_batch_step: 10
+  save_model_dir: /content/PaddleOCR/output/rec_chinese_lite_v2.0
+  save_epoch_step: 3
+  # evaluation is run every 5000 iterations after the 4000th iteration
+  eval_batch_step: [1000, 2000]
+  cal_metric_during_train: True
+  pretrained_model:
+  checkpoints: 
+  save_inference_dir:
+  use_visualdl: False
+  infer_img: /content/drive/MyDrive/imgceshi/0_1.jpg
+  # for data or label process
+  character_dict_path: /content/PaddleOCR/ppocr/utils/ppocr_keys_v1.txt
+  max_text_length: 25
+  infer_mode: False
+  use_space_char: True
+  save_res_path: /content/PaddleOCR/output/predicts_chinese_lite_v2.0.txt
+
+
+Optimizer:
+  name: Adam
+  beta1: 0.9
+  beta2: 0.999
+  lr:
+    name: Cosine
+    learning_rate: 0.001
+    warmup_epoch: 5
+  regularizer:
+    name: 'L2'
+    factor: 0.00001
+
+Architecture:
+  model_type: rec
+  algorithm: CRNN
+  Transform:
+  Backbone:
+    name: MobileNetV3
+    scale: 0.5
+    model_name: small
+    small_stride: [1, 2, 2, 2]
+  Neck:
+    name: SequenceEncoder
+    encoder_type: rnn
+    hidden_size: 48
+  Head:
+    name: CTCHead
+    fc_decay: 0.00001
+
+Loss:
+  name: CTCLoss
+
+PostProcess:
+  name: CTCLabelDecode
+
+Metric:
+  name: RecMetric
+  main_indicator: acc
+
+Train:
+  dataset:
+    name: SimpleDataSet
+    data_dir: /content/PaddleOCR/train_data/HW_Chinese/
+    label_file_list: ["/content/PaddleOCR/train_data/HW_Chinese/train.txt"]
+    transforms:
+      - DecodeImage: # load image
+          img_mode: BGR
+          channel_first: False
+      - RecAug: 
+      - CTCLabelEncode: # Class handling label
+      - RecResizeImg:
+          image_shape: [3, 32, 320]
+      - KeepKeys:
+          keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
+  loader:
+    shuffle: True
+    batch_size_per_card: 256
+    drop_last: True
+    num_workers: 8
+
+Eval:
+  dataset:
+    name: SimpleDataSet
+    data_dir: /content/PaddleOCR/train_data/HW_Chinese/
+    label_file_list: ["/content/PaddleOCR/train_data/HW_Chinese/test.txt"]
+    transforms:
+      - DecodeImage: # load image
+          img_mode: BGR
+          channel_first: False
+      - CTCLabelEncode: # Class handling label
+      - RecResizeImg:
+          image_shape: [3, 32, 320]
+      - KeepKeys:
+          keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
+  loader:
+    shuffle: False
+    drop_last: False
+    batch_size_per_card: 256
+    num_workers: 8
+
+
+
+
