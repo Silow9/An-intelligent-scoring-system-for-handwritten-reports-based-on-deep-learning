@@ -1,0 +1,114 @@
+Global:
+  debug: false
+  use_gpu: true
+  epoch_num: 100
+  log_smooth_window: 20
+  print_batch_step: 10
+  save_model_dir: /content/drive/MyDrive/output
+  save_epoch_step: 3
+  eval_batch_step:
+  - 0
+  - 2000
+  cal_metric_during_train: true
+  pretrained_model: /content/PaddleOCR/pretrain_models/ch_ppocr_mobile_v2.0_rec_train/best_accuracy
+  checkpoints: /content/drive/MyDrive/output/best_accuracy
+  save_inference_dir: /content/drive/MyDrive/output
+  use_visualdl: false
+  infer_img: /content/drive/MyDrive/imgceshi/0_1.jpg
+  character_dict_path: /content/PaddleOCR/ppocr/utils/ppocr_keys_v1.txt
+  max_text_length: 25
+  infer_mode: false
+  use_space_char: true
+  save_res_path: /content/drive/MyDrive/output/predicts_chinese_lite_v2.0.txt
+Optimizer:
+  name: Adam
+  beta1: 0.9
+  beta2: 0.999
+  lr:
+    name: Cosine
+    learning_rate: 0.001
+    warmup_epoch: 5
+  regularizer:
+    name: L2
+    factor: 1.0e-05
+Architecture:
+  model_type: rec
+  algorithm: CRNN
+  Transform: null
+  Backbone:
+    name: MobileNetV3
+    scale: 0.5
+    model_name: small
+    small_stride:
+    - 1
+    - 2
+    - 2
+    - 2
+  Neck:
+    name: SequenceEncoder
+    encoder_type: rnn
+    hidden_size: 48
+  Head:
+    name: CTCHead
+    fc_decay: 1.0e-05
+Loss:
+  name: CTCLoss
+PostProcess:
+  name: CTCLabelDecode
+Metric:
+  name: RecMetric
+  main_indicator: acc
+Train:
+  dataset:
+    name: SimpleDataSet
+    data_dir: /content/PaddleOCR/train_data/HW_Chinese/
+    label_file_list:
+    - /content/PaddleOCR/train_data/HW_Chinese/train.txt
+    transforms:
+    - DecodeImage:
+        img_mode: BGR
+        channel_first: false
+    - RecAug: null
+    - CTCLabelEncode: null
+    - RecResizeImg:
+        image_shape:
+        - 3
+        - 32
+        - 320
+    - KeepKeys:
+        keep_keys:
+        - image
+        - label
+        - length
+  loader:
+    shuffle: true
+    batch_size_per_card: 256
+    drop_last: true
+    num_workers: 8
+Eval:
+  dataset:
+    name: SimpleDataSet
+    data_dir: /content/PaddleOCR/train_data/HW_Chinese
+    label_file_list:
+    - /content/PaddleOCR/train_data/HW_Chinese/test.txt
+    transforms:
+    - DecodeImage:
+        img_mode: BGR
+        channel_first: false
+    - CTCLabelEncode: null
+    - RecResizeImg:
+        image_shape:
+        - 3
+        - 32
+        - 320
+    - KeepKeys:
+        keep_keys:
+        - image
+        - label
+        - length
+  loader:
+    shuffle: false
+    drop_last: false
+    batch_size_per_card: 256
+    num_workers: 8
+profiler_options: null
